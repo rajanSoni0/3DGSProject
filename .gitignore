@@ -1,0 +1,33 @@
+# Virtual Environment
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# VS Code
+.vscode/
+
+# Generated Frames
+extracted_frames/
+
+# Processed Images
+accepted/
+rejected_blur/
+rejected_duplicate/
+final_dataset/
+
+# Reports
+reports/
+
+# Input Videos
+input_video/
+
+# Logs
+*.log
+
+# OS Files
+.DS_Store
+Thumbs.db
