@@ -6,56 +6,60 @@ import imagehash
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-INPUT_DIR = BASE_DIR / "accepted"
 
-OUTPUT_DIR = BASE_DIR / "final_dataset"
+def remove_duplicates(hash_threshold: int):
 
-DUPLICATE_DIR = BASE_DIR / "rejected_duplicate"
+    input_dir = BASE_DIR / "accepted"
 
-OUTPUT_DIR.mkdir(exist_ok=True)
-DUPLICATE_DIR.mkdir(exist_ok=True)
+    final_dir = BASE_DIR / "final_dataset"
 
-HASH_THRESHOLD = 5
+    duplicate_dir = BASE_DIR / "rejected_duplicate"
 
-accepted_hashes = []
+    final_dir.mkdir(exist_ok=True)
 
-unique_count = 0
-duplicate_count = 0
+    duplicate_dir.mkdir(exist_ok=True)
 
-for image_path in INPUT_DIR.glob("*.jpg"):
+    hashes = []
 
-    img = Image.open(image_path)
+    unique_count = 0
+    duplicate_count = 0
 
-    current_hash = imagehash.average_hash(img)
+    for image_path in input_dir.glob("*.jpg"):
 
-    is_duplicate = False
+        img = Image.open(image_path)
 
-    for existing_hash in accepted_hashes:
+        current_hash = imagehash.average_hash(img)
 
-        if current_hash - existing_hash < HASH_THRESHOLD:
-            is_duplicate = True
-            break
+        is_duplicate = False
 
-    if is_duplicate:
+        for existing_hash in hashes:
 
-        shutil.copy(
-            image_path,
-            DUPLICATE_DIR / image_path.name
-        )
+            if current_hash - existing_hash < hash_threshold:
+                is_duplicate = True
+                break
 
-        duplicate_count += 1
+        if is_duplicate:
 
-    else:
+            shutil.copy(
+                image_path,
+                duplicate_dir / image_path.name
+            )
 
-        accepted_hashes.append(current_hash)
+            duplicate_count += 1
 
-        shutil.copy(
-            image_path,
-            OUTPUT_DIR / image_path.name
-        )
+        else:
 
-        unique_count += 1
+            hashes.append(current_hash)
 
-print("\n===== DUPLICATE DETECTION REPORT =====")
-print(f"Unique Images : {unique_count}")
-print(f"Duplicates Removed : {duplicate_count}")
+            shutil.copy(
+                image_path,
+                final_dir / image_path.name
+            )
+
+            unique_count += 1
+
+    print(f"Unique Images: {unique_count}")
+
+    print(f"Duplicates Removed: {duplicate_count}")
+
+    return unique_count, duplicate_count

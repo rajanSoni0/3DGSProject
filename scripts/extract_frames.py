@@ -1,43 +1,37 @@
 import subprocess
 from pathlib import Path
 
-# Project root directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Paths
-VIDEO_PATH = BASE_DIR / "input_video" / "room.mp4"
-OUTPUT_DIR = BASE_DIR / "extracted_frames"
 
-# Create output folder if it doesn't exist
-OUTPUT_DIR.mkdir(exist_ok=True)
+def extract_frames(video_path: str, fps: int):
 
-# Check if video exists
-if not VIDEO_PATH.exists():
-    print(f"Video not found: {VIDEO_PATH}")
-    exit()
+    video_file = BASE_DIR / video_path
+    output_dir = BASE_DIR / "extracted_frames"
 
-# FFmpeg command
-command = [
-    "ffmpeg",
-    "-i",
-    str(VIDEO_PATH),
-    "-vf",
-    "fps=5",
-    str(OUTPUT_DIR / "frame_%04d.jpg")
-]
+    output_dir.mkdir(exist_ok=True)
 
-print("Extracting frames...")
+    command = [
+        "ffmpeg",
+        "-y",
+        "-i",
+        str(video_file),
+        "-vf",
+        f"fps={fps}",
+        str(output_dir / "frame_%04d.jpg")
+    ]
 
-result = subprocess.run(
-    command,
-    capture_output=True,
-    text=True
-)
+    result = subprocess.run(
+        command,
+        capture_output=True,
+        text=True
+    )
 
-if result.returncode == 0:
-    total_frames = len(list(OUTPUT_DIR.glob("*.jpg")))
-    print(f"Frames extracted successfully!")
-    print(f"Total Frames: {total_frames}")
-else:
-    print("Extraction Failed")
-    print(result.stderr)
+    if result.returncode != 0:
+        raise Exception(result.stderr)
+
+    total_frames = len(list(output_dir.glob("*.jpg")))
+
+    print(f"Frames Extracted: {total_frames}")
+
+    return total_frames

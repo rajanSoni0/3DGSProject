@@ -4,50 +4,54 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-INPUT_DIR = BASE_DIR / "extracted_frames"
-ACCEPTED_DIR = BASE_DIR / "accepted"
-REJECTED_DIR = BASE_DIR / "rejected_blur"
 
-ACCEPTED_DIR.mkdir(exist_ok=True)
-REJECTED_DIR.mkdir(exist_ok=True)
+def detect_blur(blur_threshold: float):
 
-BLUR_THRESHOLD = 100
+    input_dir = BASE_DIR / "extracted_frames"
 
-accepted = 0
-rejected = 0
+    accepted_dir = BASE_DIR / "accepted"
 
-for image_path in INPUT_DIR.glob("*.jpg"):
+    rejected_dir = BASE_DIR / "rejected_blur"
 
-    image = cv2.imread(str(image_path))
+    accepted_dir.mkdir(exist_ok=True)
 
-    if image is None:
-        continue
+    rejected_dir.mkdir(exist_ok=True)
 
-    score = cv2.Laplacian(
-        image,
-        cv2.CV_64F
-    ).var()
+    accepted = 0
+    rejected = 0
 
-    print(f"{image_path.name} -> {score:.2f}")
+    for image_path in input_dir.glob("*.jpg"):
 
-    if score < BLUR_THRESHOLD:
+        image = cv2.imread(str(image_path))
 
-        shutil.copy(
-            image_path,
-            REJECTED_DIR / image_path.name
-        )
+        if image is None:
+            continue
 
-        rejected += 1
+        score = cv2.Laplacian(
+            image,
+            cv2.CV_64F
+        ).var()
 
-    else:
+        if score < blur_threshold:
 
-        shutil.copy(
-            image_path,
-            ACCEPTED_DIR / image_path.name
-        )
+            shutil.copy(
+                image_path,
+                rejected_dir / image_path.name
+            )
 
-        accepted += 1
+            rejected += 1
 
-print("\n===== REPORT =====")
-print(f"Accepted : {accepted}")
-print(f"Rejected : {rejected}")
+        else:
+
+            shutil.copy(
+                image_path,
+                accepted_dir / image_path.name
+            )
+
+            accepted += 1
+
+    print(f"Accepted: {accepted}")
+
+    print(f"Rejected: {rejected}")
+
+    return accepted, rejected
